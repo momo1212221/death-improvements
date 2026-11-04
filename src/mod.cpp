@@ -12,6 +12,13 @@ int deaths=0;
 bool show_counter=true;
 bool skip_death_scenes=true;
 int skip_after=45;
+int notice_frames=0;
+void notice(const std::string& text){
+    if(g!=nullptr && g->has_notice()){
+        g->play_notice(text);
+        notice_frames=120;
+    }
+}
 }
 void load(openrac::Mod& mod) {
     if(mod.game()!="rac1" || !mod.has_play()) throw openrac::Error("Death Improvements requires RAC1 play API");
@@ -32,20 +39,21 @@ void load(openrac::Mod& mod) {
         if(restart_requested){
             restart_requested=false;
             if(status.level>=0 && status.phase==OPENRAC_PLAY_PLAYING) g->play_travel(status.level);
-            else if(g->has_notice()) g->play_notice("Restart is available while playing");
+            else notice("Restart is available while playing");
         }
         openrac_pose pose{}; pose.size=sizeof pose;
         if(!g->hero_pose(pose)){ was_alive=true; return; }
         if(qol::new_death(was_alive,pose.health)){
             ++deaths;
-            if(show_counter && g->has_notice()) g->play_notice("Deaths this session: "+std::to_string(deaths));
+            if(show_counter) notice("Deaths this session: "+std::to_string(deaths));
         }
         if(pose.health<=0 && skip_death_scenes && g->has_scenes()){
             int frame=0;
             if(g->scene_playing(&frame)>=0 && frame>=skip_after) g->play_skip();
         }
         was_alive=pose.health>0;
+        if(notice_frames>0 && --notice_frames==0 && g->has_notice()) g->play_notice("");
     });
     mod.info("L1+R1+Circle restarts the current planet");
 }
-OPENRAC_MOD_CPP("death-improvements","0.1.1",load)
+OPENRAC_MOD_CPP("death-improvements","0.1.2",load)
