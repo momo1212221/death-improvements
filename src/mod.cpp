@@ -24,6 +24,7 @@ void load(openrac::Mod& mod) {
         const auto now=qol::pad_buttons(report);
         const auto mask=static_cast<std::uint16_t>(OPENRAC_PAD_L1|OPENRAC_PAD_R1|OPENRAC_PAD_CIRCLE);
         if(qol::combo_pressed(now,previous,mask)) restart_requested=true;
+        if((now&mask)==mask) qol::consume_buttons(report,mask);
         previous=now;
     });
     mod.on_frame([]{
@@ -47,4 +48,4 @@ void load(openrac::Mod& mod) {
     });
     mod.info("L1+R1+Circle restarts the current planet");
 }
-OPENRAC_MOD_CPP("death-improvements","0.1.0",load)
+OPENRAC_MOD_CPP("death-improvements","0.1.1",load)
